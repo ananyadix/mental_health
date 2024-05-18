@@ -39,6 +39,10 @@ class _NavBarState extends State<NavBar> {
               setState(() {
                 index = 1;
               });
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => MentalTest())
+              );
               // Close the drawer after selection
             },
           ),
@@ -62,6 +66,7 @@ class _NavBarState extends State<NavBar> {
               setState(() {
                 index = 3;
               });
+              Navigator.push(context, MaterialPageRoute(builder: (context) => StressBusters()),);
               // Close the drawer after selection
             },
           ),
@@ -72,6 +77,7 @@ class _NavBarState extends State<NavBar> {
               setState(() {
                 index = 4;
               });
+              Navigator.push(context, MaterialPageRoute(builder: (context) => AboutUs()),);
               // Close the drawer after selection
             },
           ),

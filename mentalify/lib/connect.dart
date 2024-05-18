@@ -39,7 +39,8 @@ class _ConnectWithState extends State<ConnectWith> {
     "11+ years of experience",
     "9+ years of experience"
   ];
-  final img=["assets/images/woman.png",
+  final img=[
+    "assets/images/woman.png",
     "assets/images/agent.png",
     "assets/images/man-avatar.png",
     "assets/images/man.png",
@@ -63,20 +64,38 @@ class _ConnectWithState extends State<ConnectWith> {
         elevation: 0.0,
         iconTheme: IconThemeData(color: Colors.black),
       ),
-      body: ListView.separated(
-        itemCount: experts.length,
-        separatorBuilder: (BuildContext context, int index) => Divider(),
-        itemBuilder: (BuildContext context, int index) {
-          return ListTile(
-            leading: Image.asset(img[index]),
-            title: Text(experts[index]),
-            subtitle: Text(experince[index]),
-            trailing: Icon(Icons.add),
-          );
-        },
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(
+              "Come and Connect with our world famous Experts",
+              style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          Expanded(
+            child: ListView.separated(
+              itemCount: experts.length,
+              separatorBuilder: (BuildContext context, int index) => Divider(),
+              itemBuilder: (BuildContext context, int index) {
+                return ListTile(
+                  leading: Image.asset(img[index]),
+                  title: Text(experts[index]),
+                  subtitle: Text(experince[index]),
+                  trailing: Icon(Icons.add),
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
 }
+
 
 

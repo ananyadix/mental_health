@@ -21,7 +21,7 @@ class _IntroPageState extends State<IntroPage> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.only(right: 80.0, left: 80, bottom: 40, top: 100),
+            padding: const EdgeInsets.only(right: 80.0, left: 80, bottom: 40, top: 80),
             child: Image.asset("assets/images/happiness.png"),
           ),
           const Padding(
