@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mentalify/navbar.dart';
+import 'package:tflite/tflite.dart';
+import 'dart:typed_data';
 
 class MentalTest extends StatefulWidget {
   const MentalTest({super.key});
@@ -48,6 +50,108 @@ class MyForm extends StatefulWidget {
 }
 
 class _MyFormState extends State<MyForm> {
+  void initState() {
+    super.initState();
+    loadModel();
+  }
+
+  Future<void> loadModel() async {
+    String? res = await Tflite.loadModel(
+      model: "assets/model.tflite",
+      labels: "assets/labels.txt",
+    );
+    if (res != null) {
+      print(res);
+    } else {
+      print("Failed to load the model");
+    }
+  }
+
+  Future<void> predict(List<double> inputData) async {
+    // Convert inputData to Uint8List
+    Uint8List inputBytes = Uint8List.fromList(
+      inputData.map((e) => e.toInt()).toList(),
+    );
+
+    var output = await Tflite.runModelOnBinary(
+      binary: inputBytes,
+      // Remove `numThreads` if your TFLite package version doesn't support it
+      threshold: 0.5,
+    );
+
+    if (output != null && output.isNotEmpty) {
+      double confidence = output[0]['confidence'];
+      String label = output[0]['label'];
+      if (label == "yes") {
+        showYesPopup();
+      } else {
+        showNoPopup();
+      }
+    }
+  }
+
+  void showYesPopup() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("You are diagonosed with stress and anxiety issues"),
+          content: Text("Don't worry we have our experts to take your complete care"),
+          actions: <Widget>[
+            TextButton(
+              child: Text("Connect with our Experts"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void showNoPopup() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Congrats! you are not suffering from any kind of stress or anxiety issue"),
+          content: Text("To keep your mental health up to date always follow these stress busters"),
+          actions: <Widget>[
+            TextButton(
+              child: Text("Stress Busters"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void handleSubmit() {
+    // Gather form data and preprocess it
+    List<double> inputData = gatherFormData();
+
+    // Make prediction
+    predict(inputData);
+  }
+
+  List<double> gatherFormData() {
+    // Convert form inputs to numerical values suitable for the model
+    return [
+      _age.toDouble(),
+      _selectedGender == 'Male' ? 1.0 : 0.0,
+      _selectedFamilyHistory == 'Yes' ? 1.0 : 0.0,
+      _selectedLevel == 'Somewhat easy' ? 1.0 : (_selectedLevel == "Don't know" ? 2.0 : 3.0),
+      _selectedWorkInterfere == 'Often' ? 1.0 : (_selectedWorkInterfere == 'Rarely' ? 2.0 : (_selectedWorkInterfere == 'Never' ? 3.0 : (_selectedWorkInterfere == 'Sometimes' ? 4.0 : 5.0))),
+      _selectedCareOptions == 'Yes' ? 1.0 : (_selectedCareOptions == 'No' ? 2.0 : 3.0),
+      _selectedAnonymity == 'Yes' ? 1.0 : (_selectedAnonymity == "Don't know" ? 2.0 : 0.0),
+      _selectedBenefits == 'Yes' ? 1.0 : (_selectedBenefits == "Don't know" ? 2.0 : 0.0)
+    ];
+  }
+
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   int _age = 0;
   String? _selectedGender;
@@ -140,6 +244,7 @@ class _MyFormState extends State<MyForm> {
             DropdownButtonFormField<String>(
               decoration: InputDecoration(
                 labelText: "Stressful condition management",
+                helperText: "How easy or difficult is it to manage stressful conditions?",
                 prefixIcon: Icon(Icons.manage_history_outlined),
                 border: OutlineInputBorder(),
               ),
@@ -168,7 +273,8 @@ class _MyFormState extends State<MyForm> {
             SizedBox(height: 16),
             DropdownButtonFormField<String>(
               decoration: InputDecoration(
-                labelText: "Mental stress at work",
+                labelText: "Mental stress and work",
+                helperText: "Does mental stress create any problems during your work?",
                 prefixIcon: Icon(Icons.work),
                 border: OutlineInputBorder(),
               ),
@@ -197,7 +303,8 @@ class _MyFormState extends State<MyForm> {
             SizedBox(height: 16),
             DropdownButtonFormField<String>(
               decoration: InputDecoration(
-                labelText: "Taking Mental health care",
+                labelText: "Mental health care",
+                helperText: "Have you taken any care for your mental health?",
                 prefixIcon: Icon(Icons.health_and_safety),
                 border: OutlineInputBorder(),
               ),
@@ -227,6 +334,7 @@ class _MyFormState extends State<MyForm> {
             DropdownButtonFormField<String>(
               decoration: InputDecoration(
                 labelText: "Sharing mental issues",
+                helperText: "Have you shared any mental issues with anyone?",
                 prefixIcon: Icon(Icons.share),
                 border: OutlineInputBorder(),
               ),
@@ -256,6 +364,7 @@ class _MyFormState extends State<MyForm> {
             DropdownButtonFormField<String>(
               decoration: InputDecoration(
                 labelText: "Mental health benefits",
+                helperText: "Did any help give you any benefit?",
                 prefixIcon: Icon(Icons.help),
                 border: OutlineInputBorder(),
               ),
@@ -285,6 +394,7 @@ class _MyFormState extends State<MyForm> {
             DropdownButtonFormField<String>(
               decoration: InputDecoration(
                 labelText: "Family history of stress or anxiety",
+                helperText: "Do you have any family history related to stress or anxiety issues?",
                 prefixIcon: Icon(Icons.family_restroom),
                 border: OutlineInputBorder(),
               ),
@@ -312,7 +422,7 @@ class _MyFormState extends State<MyForm> {
             ),
             SizedBox(height: 32),
             ElevatedButton(
-              onPressed: _submitForm,
+              onPressed: handleSubmit,
               child: Text('Submit'),
               style: ElevatedButton.styleFrom(
                 padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
@@ -326,6 +436,11 @@ class _MyFormState extends State<MyForm> {
     );
   }
 }
+
+
+
+
+
 
 
 
